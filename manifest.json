@@ -1,0 +1,32 @@
+{
+  "required_api_version": "^2.0.0",
+  "name": "z Search Extension",
+  "description": "Search for directories using 'z'",
+  "developer_name": "Daniel Cervenkov",
+  "icon": "images/icon.png",
+  "options": {
+    "query_debounce": 0.1
+  },
+  "preferences": [
+    {
+      "id": "kw",
+      "type": "keyword",
+      "name": "z Search Keyword",
+      "description": "Search for directories using 'z'",
+      "default_value": "z"
+    },
+    {
+      "id": "max_results",
+      "type": "input",
+      "name": "Maximal number of results to show",
+      "default_value": "15"
+    },
+    {
+      "id": "z_file",
+      "type": "input",
+      "name": "Path to z file",
+      "description": "Location of your z file. Usually ~/.z",
+      "default_value": "~/.z"
+    }
+  ]
+}
