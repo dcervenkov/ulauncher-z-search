@@ -1,7 +1,7 @@
 {
   "required_api_version": "^2.0.0",
-  "name": "z Search Extension",
-  "description": "Search for directories using 'z'",
+  "name": "z Directory Search Extension",
+  "description": "Search for directories using 'z'. 'z' is a command line tool to quickly jump to directories that you have visited recently or frequently.",
   "developer_name": "Daniel Cervenkov",
   "icon": "images/icon.png",
   "options": {
@@ -12,7 +12,6 @@
       "id": "kw",
       "type": "keyword",
       "name": "z Search Keyword",
-      "description": "Search for directories using 'z'",
       "default_value": "z"
     },
     {
@@ -25,8 +24,19 @@
       "id": "z_file",
       "type": "input",
       "name": "Path to z file",
-      "description": "Location of your z file. Usually ~/.z",
+      "description": "Location of your z file. Typically ~/.z",
       "default_value": "~/.z"
+    },
+    {
+      "id": "update_z_file",
+      "type": "select",
+      "name": "Update the z file when opening a directory",
+      "description": "If you don't want this extension to touch your z file, set to 'no'.",
+      "default_value": true,
+      "options": [
+        {"value": true, "text": "yes"},
+        {"value": false, "text": "no"}
+      ]
     }
   ]
 }

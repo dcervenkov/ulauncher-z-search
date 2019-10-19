@@ -5,16 +5,20 @@ This module is an extension for ulauncher that searches for directories using
 the 'z' file and sorts the results based on 'frecency'.
 """
 
+import fileinput
 import re
 import time
 import os
+import sys
 from pathlib import Path
 from gi.repository import Gio, Gtk
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
-from ulauncher.api.shared.event import KeywordQueryEvent, PreferencesEvent, PreferencesUpdateEvent
+from ulauncher.api.shared.event import KeywordQueryEvent, PreferencesEvent, PreferencesUpdateEvent, ItemEnterEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
+from ulauncher.api.shared.action.ActionList import ActionList
+from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
@@ -39,6 +43,14 @@ def frecency(rank, last_time):
     return rank * multiplier
 
 
+def replace_lines_in_file(file, old_line, new_line):
+    """Replace matching lines in file."""
+    for line in fileinput.input(file, inplace=1):
+        if old_line in line:
+            line = new_line + os.linesep
+        sys.stdout.write(line)
+
+
 class ZSearchExtension(Extension):
     """The z search extension."""
 
@@ -48,8 +60,10 @@ class ZSearchExtension(Extension):
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(PreferencesEvent, PreferencesLoadListener())
         self.subscribe(PreferencesUpdateEvent, PreferencesChangeListener())
+        self.subscribe(ItemEnterEvent, ItemEnterEventListener())
         self.z_file = ""
         self.max_results = 0
+        self.update_z_file = False
 
     def search(self, query):
         """Search for entries matching a query return a list of dicts.
@@ -85,6 +99,7 @@ class PreferencesLoadListener(EventListener):
         extension.preferences.update(event.preferences)
         extension.z_file = os.path.expanduser(extension.preferences['z_file'])
         extension.max_results = int(extension.preferences['max_results'])
+        extension.update_z_file = extension.preferences['update_z_file'] == "true"
 
 
 class PreferencesChangeListener(EventListener):
@@ -96,6 +111,8 @@ class PreferencesChangeListener(EventListener):
             extension.z_file = os.path.expanduser(event.new_value)
         elif event.id == 'max_results':
             extension.max_results = int(event.new_value)
+        elif event.id == 'update_z_file':
+            extension.update_z_file = event.new_value == "true"
 
 
 class KeywordQueryEventListener(EventListener):
@@ -128,11 +145,15 @@ class KeywordQueryEventListener(EventListener):
 
         entries = []
         for result in results:
+            actions = [OpenAction(result['path'])]
+            if extension.update_z_file:
+                actions.append(ExtensionCustomAction(
+                    result, keep_app_open=False))
             entries.append(
                 ExtensionSmallResultItem(icon=self.folder_icon,
                                          name=self.get_display_path(
                                              result['path']),
-                                         on_enter=OpenAction(result['path'])))
+                                         on_enter=ActionList(actions)))
 
         return RenderResultListAction(entries)
 
@@ -161,6 +182,26 @@ class KeywordQueryEventListener(EventListener):
             folder_icon = "images/folder.png"
 
         return folder_icon
+
+
+class ItemEnterEventListener(EventListener):
+    """This event listener is called when the user selects an entry."""
+
+    def on_event(self, event, extension):
+        """Update the entry's rank and time in the z file."""
+        entry = event.get_data()
+
+        old_line = '|'.join([
+            entry['path'],
+            str(entry['rank']),
+            str(entry['time'])])
+
+        new_line = '|'.join([
+            entry['path'],
+            str(entry['rank'] + 1),
+            str(int(time.time()))])
+
+        replace_lines_in_file(extension.z_file, old_line, new_line)
 
 
 if __name__ == '__main__':
