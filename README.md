@@ -2,7 +2,7 @@
 
 [![Ulauncher Extension](https://img.shields.io/badge/Ulauncher-Extension-green.svg?style=for-the-badge)](https://ext.ulauncher.io/-/github-brpaz-ulauncher-file-search)
 
-![zsearch-demo.png](images/zsearch-demo.png "zsearch-demo.png")
+![images/zsearch-demo.png](images/zsearch-demo.png "zsearch-demo.png")
 
 An extension for [Ulauncher](https://ulauncher.io) to **quickly** search for directories using the `.z` file usually created and maintained by [`z`](https://github.com/rupa/z). The search results are ordered by *frecency*, a portmanteau of *recent* and *frequency* - a directory you visited often or recently is ranked high. When you open a directory via this extension (or via `cd` or [`z`](https://github.com/rupa/z)), the ranking is updated.
 
