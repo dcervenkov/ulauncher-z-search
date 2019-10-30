@@ -11,7 +11,6 @@ import time
 import os
 import sys
 from pathlib import Path
-from gi.repository import Gio, Gtk
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent, PreferencesEvent, PreferencesUpdateEvent, ItemEnterEvent
@@ -25,6 +24,7 @@ from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 import gi
 gi.require_version('Gtk', '3.0')
+from gi.repository import Gio, Gtk
 
 
 def frecency(rank, last_time):
@@ -79,8 +79,8 @@ class ZSearchExtension(Extension):
             for line in lines:
                 if pattern.search(line):
                     path, rank, last_time = line.rstrip('\n').split('|')
-                    rank = int(rank)
-                    last_time = int(last_time)
+                    rank = float(rank)
+                    last_time = float(last_time)
                     results.append({'path': path,
                                     'rank': rank,
                                     'time': last_time,
@@ -199,7 +199,7 @@ class ItemEnterEventListener(EventListener):
         new_line = '|'.join([
             entry['path'],
             str(entry['rank'] + 1),
-            str(int(time.time()))])
+            str(float(time.time()))])
 
         replace_lines_in_file(extension.z_file, old_line, new_line)
 
