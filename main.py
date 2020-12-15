@@ -5,6 +5,7 @@ This module is an extension for ulauncher that searches for directories using
 the 'z' file and sorts the results based on 'frecency'.
 """
 
+import logging
 import fileinput
 import re
 import time
@@ -43,12 +44,19 @@ def frecency(rank, last_time):
     return rank * multiplier
 
 
-def replace_lines_in_file(file, old_line, new_line):
-    """Replace matching lines in file."""
+def update_z_file(file, path, rank, time):
+    """Update path in .z file with new rank and time."""
+    logging.debug("Updating '%s' in '%s' with rank %f and time %d", path, file, rank, int(time))
+    line_replaced = False
     for line in fileinput.input(file, inplace=1):
-        if old_line in line:
-            line = new_line + os.linesep
+        old_path, old_rank, old_time = line.rsplit('|', maxsplit=3)
+        if old_path == path:
+            line = f"{path}|{rank}|{int(time)}" + os.linesep
+            line_replaced = True
         sys.stdout.write(line)
+
+    if not line_replaced:
+        logging.warning("Updating '%s' failed; '%s' not found in '%s'", file, path, file)
 
 
 class ZSearchExtension(Extension):
@@ -190,18 +198,7 @@ class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         """Update the entry's rank and time in the z file."""
         entry = event.get_data()
-
-        old_line = '|'.join([
-            entry['path'],
-            str(entry['rank']),
-            str(entry['time'])])
-
-        new_line = '|'.join([
-            entry['path'],
-            str(entry['rank'] + 1),
-            str(float(time.time()))])
-
-        replace_lines_in_file(extension.z_file, old_line, new_line)
+        update_z_file(extension.z_file, entry['path'], entry['rank'] + 1, float(time.time()))
 
 
 if __name__ == '__main__':
