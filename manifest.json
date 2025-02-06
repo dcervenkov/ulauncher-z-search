@@ -37,6 +37,13 @@
         {"value": true, "text": "yes"},
         {"value": false, "text": "no"}
       ]
+    },
+    {
+      "id": "command_on_select",
+      "type": "input",
+      "name": "Command to run on select",
+      "description": "Command to execute when an item is selected, by default xdg-open is used.",
+      "default_value": ""
     }
   ]
 }

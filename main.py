@@ -28,6 +28,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
+from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -82,6 +83,7 @@ class ZSearchExtension(Extension):
         self.z_file = ""
         self.max_results = 0
         self.update_z_file = False
+        self.command_on_select = ""
 
     def search(self, query):
         """Search for entries matching a query return a list of dicts.
@@ -121,6 +123,7 @@ class PreferencesLoadListener(EventListener):
         extension.z_file = os.path.expanduser(extension.preferences["z_file"])
         extension.max_results = int(extension.preferences["max_results"])
         extension.update_z_file = extension.preferences["update_z_file"] == "true"
+        extension.command_on_select = extension.preferences["command_on_select"]
 
 
 class PreferencesChangeListener(EventListener):
@@ -134,6 +137,8 @@ class PreferencesChangeListener(EventListener):
             extension.max_results = int(event.new_value)
         elif event.id == "update_z_file":
             extension.update_z_file = event.new_value == "true"
+        elif event.id == "command_on_select":
+            extension.command_on_select = event.new_value
 
 
 class KeywordQueryEventListener(EventListener):
@@ -173,7 +178,13 @@ class KeywordQueryEventListener(EventListener):
 
         entries = []
         for result in results:
-            actions = [OpenAction(result["path"])]
+
+            actions = []
+            if extension.command_on_select and extension.command_on_select.strip():
+                actions.append(RunScriptAction(f"{extension.command_on_select} {result['path']}"))
+            else:
+                actions.append(OpenAction(result["path"]))
+
             if extension.update_z_file:
                 actions.append(ExtensionCustomAction(result, keep_app_open=False))
             entries.append(
