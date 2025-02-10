@@ -178,12 +178,7 @@ class KeywordQueryEventListener(EventListener):
 
         entries = []
         for result in results:
-
-            actions = []
-            if extension.command_on_select and extension.command_on_select.strip():
-                actions.append(RunScriptAction(f"{extension.command_on_select} {result['path']}"))
-            else:
-                actions.append(OpenAction(result["path"]))
+            actions = [RunScriptAction(f"{extension.command_on_select} {result['path']}")]
 
             if extension.update_z_file:
                 actions.append(ExtensionCustomAction(result, keep_app_open=False))

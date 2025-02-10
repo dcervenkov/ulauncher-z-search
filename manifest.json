@@ -43,7 +43,7 @@
       "type": "input",
       "name": "Command to run on select",
       "description": "Command to execute when an item is selected, by default xdg-open is used.",
-      "default_value": ""
+      "default_value": "xdg-open"
     }
   ]
 }
